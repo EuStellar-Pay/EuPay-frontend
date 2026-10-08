@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-
-interface Props { onConnect: (a: string) => void }
+import { useWallet } from '../context/WalletContext'
 
 /* ─── Live Stream Card ─────────────────────────────────────────── */
 function StreamCard() {
@@ -220,8 +219,9 @@ function FCard({ icon, title, desc, children, wide = false }: {
 }
 
 /* ─── Page ─────────────────────────────────────────────────────── */
-export function LandingPage({ onConnect }: Props) {
-  const go  = useCallback(() => onConnect('MOCK_ADDRESS'), [onConnect])
+export function LandingPage() {
+  const { connect, connecting } = useWallet()
+  const go = useCallback(() => connect(), [connect])
   const [vol, setVol] = useState(2847391)
   useEffect(() => {
     const id = setInterval(() => setVol(v => v + Math.floor(Math.random() * 300 + 50)), 1200)
@@ -423,9 +423,9 @@ export function LandingPage({ onConnect }: Props) {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <button onClick={go}
-                className="px-8 py-3 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors min-h-[44px]">
-                Launch App →
+              <button onClick={go} disabled={connecting}
+                className="px-8 py-3 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white rounded-lg transition-colors min-h-[44px]">
+                {connecting ? 'Connecting…' : 'Launch App →'}
               </button>
               <a href="https://github.com/EuStellar-Pay" target="_blank" rel="noopener noreferrer"
                 className="px-8 py-3 text-sm font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors min-h-[44px] flex items-center justify-center">
