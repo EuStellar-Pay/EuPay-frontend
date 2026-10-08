@@ -1,8 +1,27 @@
-import { useState, useEffect } from 'react';
-export interface Stream { id: string; worker: string; ratePerSecond: bigint; status: 'active'|'paused'|'cancelled'; }
-export function useStream(streamId: string) {
-  const [stream, setStream] = useState<Stream | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { setTimeout(() => { setStream({ id: streamId, worker: 'Alice M.', ratePerSecond: BigInt(1_000_000), status: 'active' }); setLoading(false); }, 500); }, [streamId]);
-  return { stream, loading };
+import { useState, useEffect, useCallback } from 'react';
+import { getStream, StreamData } from '../lib/api';
+
+export type { StreamData };
+
+export function useStream(id: number | null) {
+  const [stream,  setStream]  = useState<StreamData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (id === null) return;
+    setLoading(true);
+    setError(null);
+    try {
+      setStream(await getStream(id));
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to load stream');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { stream, loading, error, refresh };
 }
